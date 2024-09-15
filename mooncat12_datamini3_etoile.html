@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace étoilé avec SVG centré</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            z-index: 1;
+        }
+
+        /* Style pour centrer et redimensionner le SVG inline */
+        .svg-overlay {
+            position: absolute;
+            top: 50%;            /* Centrer verticalement */
+            left: 50%;           /* Centrer horizontalement */
+            transform: translate(-50%, -50%);  /* Ramener le centre du SVG au centre de la page */
+            z-index: 10;         /* Toujours visible au-dessus des autres éléments */
+        }
+
+                /* Style pour le bouton */
+                .toggle-button {
+            display: none;
+            position: absolute;
+            /*top: 70%;            /* Positionné sous le SVG */
+            /*left: 50%;           /* Centrer horizontalement */
+            /*transform: translate(-50%, -50%);  /* Centrer horizontalement sous le SVG */
+            padding: 5px 10px;
+            border: 2px solid white;
+            background-color: #6f6afa;
+            color: white;
+            font-size: 10px;
+            z-index: 20;        /* Au-dessus du SVG */
+        }
+
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+
+    <!-- Ajout d'un SVG inline centré et redimensionné -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="svg-overlay" width="190" height="240" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges" style="image-rendering:pixelated" viewBox="41 47 38 48"><defs><path id="a" d="M0 0h2v2H0z"/></defs><g style="filter:drop-shadow(0 0 2px #a6aae0)"><path fill="#000433" d="M71 49h-2v2h-2v2h-6v-2h-2v-2h-4v6h-2v14h-4v2h-4v4h-2v10h2v2h2v2h4v4h6v-2h6v2h4v-2h2v-8h2v-6h2v-2h4v-6h-4v-2h2V55h-2v-4h-2z"/><path fill="#99E4FF" d="M71 51h-2v2h-2v2h-6v-2h-2v-2h-2v2h2v2h-2v2h-2v10h2v2h14v-2h2V57h-2v-2h-2v-2h2zM73 69h-2v2H57v-2h-2v2h-2v4h-2v10h-2v-4h-2v-4h2v-4h2v-2h-2v2h-2v4h-2v6h2v2h2v2h4v2h6v-2h2v-2h-4v-2h-4v-2h6v4h2v-8h2v-2h-2v-2h6v4h-2v2h2v10h-4v-2h2v-2h2v-4h2v-6h2v-2h2z"/><g fill="#0010E6" transform="matrix(-1 0 0 1 128 0)"><use x="57" y="53" href="#a"/><use x="69" y="53" href="#a"/><use x="63" y="63" href="#a"/><use x="53" y="71" href="#a"/><use x="63" y="75" href="#a"/><use x="63" y="89" href="#a"/><use x="73" y="89" href="#a"/></g><path fill="#000766" d="M67 79h-6v8h4v-2h2z"/><g fill="#6671FF" transform="matrix(-1 0 0 1 128 0)"><use x="61" y="55" href="#a"/><use x="65" y="55" href="#a"/><use x="55" y="59" href="#a"/><use x="71" y="59" href="#a"/><use x="55" y="63" href="#a"/><use x="71" y="63" href="#a"/><use x="57" y="71" href="#a"/><use x="73" y="71" href="#a"/><use x="59" y="73" href="#a"/><use x="71" y="73" href="#a"/><use x="79" y="73" href="#a"/><use x="75" y="75" href="#a"/><use x="73" y="77" href="#a"/><use x="81" y="77" href="#a"/><use x="81" y="81" href="#a"/><use x="79" y="83" href="#a"/><use x="61" y="85" href="#a"/></g><g fill="#000766" transform="matrix(-1 0 0 1 128 0)"><use x="59" y="63" href="#a"/><use x="67" y="63" href="#a"/><use x="61" y="65" href="#a"/><use x="65" y="65" href="#a"/></g><g fill="#000433" transform="matrix(-1 0 0 1 128 0)"><use x="59" y="59" href="#a"/><use x="67" y="59" href="#a"/></g></g></svg>
+
+ <!-- Bouton à afficher/dissiper -->
+ <button id="toggleButton" class="toggle-button">MoonCat #7026 celebrates the Cypherdudes mint out on 09/14/2024. <br> Fully onchain grail cryptoart. Thanks Félix ! 🐱✨</button>
+
+    <script>
+
+function positionButtonUnderSVG() {
+            const svgRect = svg.getBoundingClientRect();
+            // Positionne le bouton juste sous le SVG
+            button.style.top = `${svgRect.bottom + 5}px`; // 10px d'espace sous le SVG
+            button.style.left = `${svgRect.left + (svgRect.width / 2) - (button.offsetWidth / 2)}px`; // Centré sous le SVG
+        }
+
+const svg = document.querySelector('svg');
+        const button = document.getElementById('toggleButton');
+
+        svg.addEventListener('click', () => {
+            if (button.style.display === 'none' || button.style.display === '') {
+                button.style.display = 'block';
+                positionButtonUnderSVG();
+            } else {
+                button.style.display = 'none';
+            }
+        });
+
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const stars = [];
+        const starTypes = ['square', 'smallSquare', 'smallCross', 'largeCross'];
+        const starColors = ['#FFFFFF', '#BBBBBB', '#999999', '#666666'];
+        const starSize = {
+            square: 7,
+            smallSquare: 3,
+            smallCross: 10,
+            largeCross: 20
+        };
+
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function createStar(initial = false) {
+            const type = starTypes[Math.floor(Math.random() * starTypes.length)];
+            const intensity = starColors[Math.floor(Math.random() * starColors.length)];
+            
+            // Ajuster la vitesse en fonction du type de l'étoile (les grandes étoiles se déplacent plus vite)
+            let speed;
+            if (type === 'largeCross') {
+                speed = random(2, 4);  // Grandes croix : vitesse rapide
+            } else if (type === 'smallCross') {
+                speed = random(1, 3);  // Petites croix : vitesse modérée
+            } else if (type === 'square') {
+                speed = random(1, 2);  // Carrés moyens : vitesse moyenne
+            } else {
+                speed = random(0.5, 1.5);  // Petits carrés : vitesse lente
+            }
+
+            // Si initial = true, l'étoile commence n'importe où à gauche de l'écran
+            const x = initial ? random(0, canvas.width) : canvas.width;
+
+            return {
+                x: x,
+                y: random(0, canvas.height),
+                speed: speed,
+                type,
+                color: intensity
+            };
+        }
+
+        function drawStar(star) {
+    ctx.fillStyle = star.color;
+    switch (star.type) {
+        case 'square':
+            ctx.fillRect(star.x, star.y, starSize.square, starSize.square);
+            break;
+        case 'smallSquare':
+            ctx.fillRect(star.x, star.y, starSize.smallSquare, starSize.smallSquare);
+            break;
+        case 'smallCross':
+        case 'largeCross':
+            drawCross(star.x, star.y, starSize[star.type], star.type === 'largeCross');
+            break;
+    }
+}
+
+        function drawCross(x, y, size, isLarge) {
+    ctx.beginPath();
+    ctx.moveTo(x - size / 2, y);
+    ctx.lineTo(x + size / 2, y);
+    ctx.moveTo(x, y - size / 2);
+    ctx.lineTo(x, y + size / 2);
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    if (isLarge) {
+        ctx.fillRect(x - 4, y - 4, 8, 8);
+    }
+    
+    ctx.stroke();
+}
+
+
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Ajouter des étoiles si nécessaire
+            if (stars.length < 100) {
+                stars.push(createStar());
+            }
+
+            // Déplacer et dessiner les étoiles
+            stars.forEach((star, index) => {
+                star.x -= star.speed;
+                if (star.x + starSize[star.type] < 0) {
+                    stars.splice(index, 1); // Supprimer les étoiles qui sortent de l'écran
+                } else {
+                    drawStar(star);
+                }
+            });
+
+
+            requestAnimationFrame(update);
+        }
+
+        // Créer un ensemble initial d'étoiles qui remplissent l'écran dès le début
+        function initializeStars() {
+            for (let i = 0; i < 100; i++) {
+                stars.push(createStar(true));
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Initialisation des étoiles et démarrage de l'animation
+        initializeStars();
+        update();
+    </script>
+</body>
+</html>
